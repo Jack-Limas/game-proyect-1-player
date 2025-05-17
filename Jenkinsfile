@@ -17,7 +17,7 @@ pipeline {
 
     stage('Checkout') {
       steps {
-        git url: 'https://github.com/su-usuario/surepositorio.git', branch: 'main'
+        git url: 'https://github.com/Jack-Limas/game-proyect-1-player.git', branch: 'main'
       }
     }
 
