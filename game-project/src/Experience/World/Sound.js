@@ -12,27 +12,22 @@ export default class Sound {
     }
 
     async play() {
-        const ctx = Howler.ctx
+        try {
+            const ctx = Howler.ctx
 
-        if (ctx.state === 'suspended') {
-            try {
+            // ✅ Verificamos si ctx y ctx.state existen
+            if (ctx && ctx.state === 'suspended') {
                 await ctx.resume()
                 console.log('🔊 AudioContext reanudado desde Sound.js')
-            } catch (e) {
-                console.warn('⚠️ Audio suspendido. No se pudo reanudar todavía.', e)
-                return
             }
-        }
 
-        // Solo reproducir si el contexto está activo y no se está reproduciendo ya
-        if (ctx.state === 'running') {
             if (!this.sound.playing()) {
                 this.sound.play()
-                this._retryCount = 0 // reset
+                this._retryCount = 0
             }
-        } else {
+        } catch (e) {
             if (this._retryCount < this._maxRetries) {
-                console.warn('⏸️ AudioContext aún no está activo. Reintento programado.')
+                console.warn('⏸️ Error al intentar reproducir. Reintentando...', e)
                 this._retryCount++
                 setTimeout(() => {
                     this.play()
@@ -43,8 +38,14 @@ export default class Sound {
         }
     }
 
-    stop() {
+    sstop() {
+    if (
+        this.sound &&
+        typeof this.sound.playing === 'function' &&
+        this.sound.playing()
+    ) {
         this.sound.stop()
-        this._retryCount = 0
+    }
+    this._retryCount = 0
     }
 }
