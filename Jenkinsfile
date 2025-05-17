@@ -5,7 +5,7 @@ pipeline {
     CI = "false"
     VERCEL_TOKEN = credentials('vercel-token')
     TEST_FAILURE = "false"
-    PROJECT_DIR = "game-project" // Nombre exacto de tu carpeta frontend
+    PROJECT_DIR = "game-project"
   }
 
   tools {
@@ -25,9 +25,9 @@ pipeline {
 
     stage('Install dependencies') {
       steps {
-        dir(env.PROJECT_DIR) { // Todas las operaciones dentro de game-project/
-          bat 'npm install three cannon-es --save-dev'
-          bat 'npm install --legacy-peer-deps'
+        dir(env.PROJECT_DIR) {
+          bat 'npm install'
+          bat 'npm install vercel --save-dev'
         }
       }
     }
@@ -64,7 +64,7 @@ pipeline {
       }
       steps {
         dir(env.PROJECT_DIR) {
-          bat 'npx vercel --prod --token %VERCEL_TOKEN%'
+          bat 'npx vercel --prod --token %VERCEL_TOKEN% --yes'
         }
       }
     }
