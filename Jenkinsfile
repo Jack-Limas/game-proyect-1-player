@@ -26,7 +26,7 @@ pipeline {
     }
 
     stage('Run Robot.js Unit Test') {
-      steps { bat 'npx vitest run src/Experience/World/__tests__/Robot.test.js' }
+      steps { bat 'npx vitest run src/__tests__/Robot.test.js' }
     }
 
     stage('Build app') {
