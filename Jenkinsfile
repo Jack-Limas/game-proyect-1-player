@@ -2,14 +2,14 @@ pipeline {
   agent any
 
   environment {
-    CI = "false" // Evita que React trate los warnings como errores
+    CI = "false"
     VERCEL_TOKEN = credentials('vercel-token')
-    // Añadido: Variable para manejar fallos en tests
-    TEST_FAILURE = "false" 
+    TEST_FAILURE = "false"
+    PROJECT_DIR = "game-project" // Nombre exacto de tu carpeta frontend
   }
 
   tools {
-    nodejs 'Node 20' // Instalación limpia de NodeJS
+    nodejs 'Node 20'
   }
 
   stages {
@@ -24,20 +24,24 @@ pipeline {
     }
 
     stage('Install dependencies') {
-      steps { 
-        bat 'npm install three cannon-es --save-dev' // Añadido: Instalación explícita
-        bat 'npm install --legacy-peer-deps' 
+      steps {
+        dir(env.PROJECT_DIR) { // Todas las operaciones dentro de game-project/
+          bat 'npm install three cannon-es --save-dev'
+          bat 'npm install --legacy-peer-deps'
+        }
       }
     }
 
     stage('Run Robot.js Unit Test') {
-      steps { 
-        script {
-          try {
-            bat 'npx vitest run src/__tests__/Robot.test.js'
-          } catch (err) {
-            echo "Tests fallaron pero continuamos: ${err}"
-            env.TEST_FAILURE = "true"
+      steps {
+        dir(env.PROJECT_DIR) {
+          script {
+            try {
+              bat 'npx vitest run src/__tests__/Robot.test.js'
+            } catch (err) {
+              echo "Tests fallaron pero continuamos: ${err}"
+              env.TEST_FAILURE = "true"
+            }
           }
         }
       }
@@ -47,16 +51,21 @@ pipeline {
       when {
         expression { env.TEST_FAILURE == "false" }
       }
-      steps { bat 'npm run build' }
+      steps {
+        dir(env.PROJECT_DIR) {
+          bat 'npm run build'
+        }
+      }
     }
 
-    // Añadido: Nueva etapa para despliegue en Vercel
     stage('Deploy to Vercel') {
       when {
         expression { env.TEST_FAILURE == "false" }
       }
       steps {
-        bat 'npx vercel --prod --token %VERCEL_TOKEN%'
+        dir(env.PROJECT_DIR) {
+          bat 'npx vercel --prod --token %VERCEL_TOKEN%'
+        }
       }
     }
   }
