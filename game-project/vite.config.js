@@ -1,13 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Configuración original (se mantiene igual)
 export default defineConfig({
   plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 1000, // Aumenta el límite
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ['three'],
+          cannon: ['cannon-es'],
+          vendor: ['react', 'react-dom']
+        }
+      }
+    }
+  },
   test: {
     globals: true,
-    environment: 'jsdom',  // Para simular el DOM en pruebas
-    setupFiles: './vitest.setup.js',  //  Opcional para jest-dom
-    include: ['src/**/*.test.{js,jsx}'],  //  Ubicación de los tests
+    environment: 'jsdom',
+    setupFiles: './vitest.setup.js',
+    include: ['src/**/*.test.{js,jsx}'],
   },
 });
