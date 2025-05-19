@@ -94,21 +94,37 @@ export default class Robot {
     }
 
     _playAnimation(name) {
-        const newAction = this.animation.actions[name]
-        const oldAction = this.animation.actions.current
-        if (!newAction || !oldAction) return
+    const newAction = this.animation.actions[name];
+    const oldAction = this.animation.actions.current;
+    if (!newAction || !oldAction) return;
 
-        newAction.reset()
-        newAction.play()
-        newAction.crossFadeFrom(oldAction, 0.3)
-        this.animation.actions.current = newAction
+    newAction.reset();
+    newAction.play();
+    newAction.crossFadeFrom(oldAction, 0.3);
+    this.animation.actions.current = newAction;
 
-        if (name === 'walking') this.walkSound.play()
-        else this.walkSound.stop()
-
-        if (name === 'jump') this.jumpSound.play()
+    // Manejo seguro de walkSound
+    if (name === 'walking') {
+        if (this.walkSound && typeof this.walkSound.play === 'function') {
+            this.walkSound.play().catch(e => console.warn("Error al reproducir walkSound:", e));
+        }
+    } else {
+        if (this.walkSound) {
+            // Soporte para Howler.js, Web Audio API y otros
+            if (typeof this.walkSound.stop === 'function') {
+                this.walkSound.stop();
+            } else if (typeof this.walkSound.pause === 'function') {
+                this.walkSound.pause();
+                this.walkSound.currentTime = 0; // Reinicia el audio
+            }
+        }
     }
 
+    // Manejo seguro de jumpSound
+    if (name === 'jump' && this.jumpSound && typeof this.jumpSound.play === 'function') {
+        this.jumpSound.play().catch(e => console.warn("Error al reproducir jumpSound:", e));
+    }
+}
     update() {
         const delta = this.time.delta * 0.001
         this.animation.mixer.update(delta)
